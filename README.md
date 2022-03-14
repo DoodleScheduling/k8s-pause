@@ -6,10 +6,10 @@
 [![license](https://img.shields.io/github/license/DoodleScheduling/k8s-pause.svg)](https://github.com/DoodleScheduling/k8s-pause/blob/master/LICENSE)
 [![release](https://img.shields.io/github/release/DoodleScheduling/k8s-pause/all.svg)](https://github.com/DoodleScheduling/k8s-pause/releases)
 
-Suspend and resume entire kubernetes namespaces!
+Suspend and resume entire kubernetes namespaces! \
 This controller makes this missing feature possible.
 
-[![asciicast](https://asciinema.org/a/65nObbN0SJX5TJFKO8s0tVEOl.svg)](https://asciinema.org/a/65nObbN0SJX5TJFKO8s0tVEOl)
+![howto](./examples/screen.gif)
 
 ## Example Usage
 
