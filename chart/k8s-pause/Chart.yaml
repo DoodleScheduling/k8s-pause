@@ -1,0 +1,17 @@
+apiVersion: v2
+appVersion: v0.1.0
+description: Suspend and resume kubernetes namespaces
+home: https://github.com/DoodleScheduling/k8s-pause
+maintainers:
+- name: devops
+  email: devops@doodle.com
+keywords:
+- kubernetes-controller
+- admission-controller
+- pause
+- resume
+- suspend
+name: k8s-pause
+sources:
+- https://github.com/DoodleScheduling/k8s-pause
+version: 0.1.0
