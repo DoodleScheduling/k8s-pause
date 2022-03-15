@@ -38,8 +38,6 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: 1.17.x
-      - uses: azure/setup-kubectl@v2.0
-        id: install
       - name: Setup Kubernetes
         uses: engineerd/setup-kind@v0.5.0
         with:
@@ -67,7 +65,6 @@ jobs:
           kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.7.1/cert-manager.yaml
       - name: Build container image
         run: |
-          kubectl version
           make docker-build IMG=test/k8s-pause:latest BUILD_PLATFORMS=linux/amd64 \
             BUILD_ARGS="--cache-from=type=local,src=/tmp/.buildx-cache \
             --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max"
@@ -75,6 +72,8 @@ jobs:
         run: kind load docker-image test/k8s-pause:latest
       - name: Deploy controller
         run: make deploy IMG=test/k8s-pause:latest
+      - uses: azure/setup-kubectl@v2.0
+        id: install
       - name: Setup podinfo
         env:
           PODINFO_VER: ${{ '6.0.3' }}
@@ -87,6 +86,7 @@ jobs:
           --set replicaCount=2
       - name: Run k8s-pause tests
         run: |
+          kubectl version
           kubectl annotate ns podinfo k8s-pause/suspend=true --overwrite
           kubectl wait --for=jsonpath='{.status.phase}'=Suspended pods --all
 
@@ -102,4 +102,4 @@ jobs:
           kubectl -n podinfo get pods
           kubectl -n k8s-pause-system describe pods
           kubectl -n k8s-pause-system get all
-          kubectl -n k8s-pause-system logs deploy/k8s-pause
+          kubectl -n k8s-pause-system logs deploy/k8s-pause-controller-manager
