@@ -34,6 +34,9 @@ There is no reason to downscale deployments, statefulsets or any other kind of w
 
 ## Installation
 
+### Requirements
+Currently it is required to have [certmanager](https://cert-manager.io/docs/installation/) deployed on the cluster with either kustomize or helm deployment.
+
 ### Helm
 
 Please see [chart/k8s-pause](https://github.com/DoodleScheduling/k8s-pause/tree/master/chart/k8s-pause) for the helm chart docs.
