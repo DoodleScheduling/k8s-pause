@@ -72,8 +72,6 @@ jobs:
         run: kind load docker-image test/k8s-pause:latest
       - name: Deploy controller
         run: make deploy IMG=test/k8s-pause:latest
-      - uses: azure/setup-kubectl@v2.0
-        id: install
       - name: Setup podinfo
         env:
           PODINFO_VER: ${{ '6.0.3' }}
@@ -85,13 +83,7 @@ jobs:
           --namespace podinfo \
           --set replicaCount=2
       - name: Run k8s-pause tests
-        run: |
-          kubectl version
-          kubectl annotate ns podinfo k8s-pause/suspend=true --overwrite
-          kubectl wait -n podinfo --timeout=2m --for=jsonpath='{.status.phase}'=Suspended pods --all
-
-          kubectl annotate ns podinfo k8s-pause/suspend=false --overwrite
-          kubectl wait -n podinfo --timeout=2m --for=jsonpath='{.status.phase}'=Running pods --all
+        run: bash scripts/e2e-tests.sh
       - name: Logs
         run: |
           kubectl -n k8s-pause-system logs deploy/k8s-pause
