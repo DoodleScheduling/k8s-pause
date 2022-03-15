@@ -53,14 +53,10 @@ Determine secret name, can either be the self-created of an existing one
 {{- end -}}
 {{- end -}}
 
-{{/*
-Determine configmap name, can either be the self-created of an existing one
-*/}}
-{{- define "k8s-pause.configName" -}}
-{{- if .Values.existingConfig.name -}}
-    {{- .Values.existingConfig.name -}}
-{{- else -}}
-    {{ include "k8s-pause.fullname" . }}
-{{- end -}}
-{{- end -}}
+{{- define "k8s-pause.certManager.selfsignedIssuerName" -}}
+{{- include "k8s-pause.fullname" . }}-selfsigned-issuer
+{{- end }}
 
+{{- define "k8s-pause.certManager.servingCertName" -}}
+{{- include "k8s-pause.fullname" . }}-serving-cert
+{{- end }}

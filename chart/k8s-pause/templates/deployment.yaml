@@ -53,7 +53,14 @@ spec:
         {{- if .Values.extraArgs }}
         {{- toYaml .Values.extraArgs | nindent 8 }}
         {{- end }}
+        volumeMounts:
+        - mountPath: /tmp/k8s-webhook-server/serving-certs
+          name: cert
+          readOnly: true
         ports:
+        - containerPort: {{ .Values.webhook.port }}
+          name: webhook-server
+          protocol: TCP
         - name: metrics
           containerPort: {{ .Values.metricsPort }}
           protocol: TCP
@@ -95,5 +102,10 @@ spec:
       priorityClassName: {{ .Values.priorityClassName }}
       {{- end }}
       terminationGracePeriodSeconds: 30
+      volumes:
+      - name: cert
+        secret:
+          defaultMode: 420
+          secretName: {{ include "k8s-pause.certManager.servingCertName" . }}
       tolerations:
         {{- toYaml .Values.tolerations | nindent 8 }}

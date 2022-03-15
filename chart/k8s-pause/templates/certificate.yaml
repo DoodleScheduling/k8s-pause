@@ -1,0 +1,38 @@
+{{- if .Values.certManager.enabled }}
+# The following manifests contain a self-signed issuer CR and a certificate CR.
+# More document can be found at https://docs.cert-manager.io
+# WARNING: Targets CertManager 0.11 check https://docs.cert-manager.io/en/latest/tasks/upgrading/index.html for breaking changes
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ template "k8s-pause.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "k8s-pause.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    helm.sh/chart: {{ include "k8s-pause.chart" . }}
+  annotations:
+    {{- toYaml .Values.annotations | nindent 4 }}
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ template "k8s-pause.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "k8s-pause.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    helm.sh/chart: {{ include "k8s-pause.chart" . }}
+  annotations:
+    {{- toYaml .Values.annotations | nindent 4 }}
+spec:
+  dnsNames:
+  - {{ template "k8s-pause.fullname" . }}.{{ .Release.Namespace }}.svc
+  - {{ template "k8s-pause.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: {{ include "k8s-pause.certManager.selfsignedIssuerName" . }}
+  secretName: {{ include "k8s-pause.certManager.servingCertName" . }}
+{{- end }}
