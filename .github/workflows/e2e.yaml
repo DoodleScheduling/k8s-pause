@@ -83,7 +83,7 @@ jobs:
           --namespace podinfo \
           --set replicaCount=2
       - name: Run k8s-pause tests
-        run: bash scripts/e2e-tests.sh
+        run: bash ./scripts/e2e-test.sh
       - name: Logs
         run: |
           kubectl -n k8s-pause-system logs deploy/k8s-pause
