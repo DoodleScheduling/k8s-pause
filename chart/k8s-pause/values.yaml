@@ -17,6 +17,11 @@ certManager:
 webhook:
   enabled: true
   port: 9443
+  namespaceSelector: |
+    matchExpressions:
+    - key: control-plane
+      operator: NotIn
+      values: ["controller-manager"]
 
 imagePullSecrets: []
 

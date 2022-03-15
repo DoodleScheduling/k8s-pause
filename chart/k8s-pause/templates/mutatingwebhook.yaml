@@ -1,4 +1,4 @@
-{{- if .Values.webhook.create -}}
+{{- if .Values.webhook.enabled -}}
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
@@ -10,10 +10,8 @@ metadata:
     helm.sh/chart: {{ include "k8s-pause.chart" . }}
   annotations:
     {{- if .Values.certManager.enabled }}
-    annotations:
       cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ include "k8s-pause.certManager.servingCertName" . }}
     {{- end }}
-    {{- toYaml .Values.annotations | nindent 4 }}
 webhooks:
 - admissionReviewVersions:
   - v1
@@ -35,9 +33,8 @@ webhooks:
     resources:
     - pods
   sideEffects: None
+{{- if .Values.webhook.namespaceSelector }}
   namespaceSelector:
-    matchExpressions:
-    - key: control-plane
-      operator: NotIn
-      values: ["controller-manager"]
+    {{- .Values.webhook.namespaceSelector | nindent 4 }}
+{{- end -}}
 {{- end -}}
