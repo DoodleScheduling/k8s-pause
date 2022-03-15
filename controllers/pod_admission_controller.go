@@ -15,7 +15,7 @@ import (
 // +kubebuilder:webhook:path=/mutate-v1-pod,mutating=true,failurePolicy=fail,groups="",resources=pods,verbs=create;update,versions=v1,name=k8s-pause.infra.doodle.com,admissionReviewVersions=v1,sideEffects=None
 
 const (
-	suspendedAnnotation = "k8s-pause/suspended"
+	suspendedAnnotation = "k8s-pause/suspend"
 	schedulerName       = "k8s-pause"
 )
 

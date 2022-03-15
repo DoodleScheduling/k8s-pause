@@ -48,7 +48,7 @@ jobs:
       - name: Setup envtest
         uses: fluxcd/pkg/actions/envtest@main
         with:
-          version: "1.19.2"
+          version: "1.23.0"
       - name: Setup Helm
         uses: fluxcd/pkg/actions/helm@main
       - name: Run controller tests
@@ -65,14 +65,27 @@ jobs:
           make docker-build IMG=test/k8s-pause:latest BUILD_PLATFORMS=linux/amd64 \
             BUILD_ARGS="--cache-from=type=local,src=/tmp/.buildx-cache \
             --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max"
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
       - name: Load test image
         run: kind load docker-image test/k8s-pause:latest
       - name: Deploy controller
         run: make deploy IMG=test/k8s-pause:latest
+      - name: Setup podinfo
+        env:
+          PODINFO_VER: ${{ '6.0.3' }}
+        run: |
+          kubectl create ns podinfo
+          helm repo add podinfo https://stefanprodan.github.io/podinfo
+          helm upgrade --install --wait backend podinfo/podinfo \
+          --version $PODINFO_VER \
+          --namespace podinfo \
+          --set replicaCount=2
+      - name: Run k8s-pause tests
+        run: |
+          kubectl annotate ns podinfo k8s-pause/suspend=true --overwrite
+          kubectl wait --for=jsonpath='{.status.phase}'=Suspended pods --all
+
+          kubectl annotate ns podinfo k8s-pause/suspend=false --overwrite
+          kubectl wait --for=jsonpath='{.status.phase}'=Running pods --all
       - name: Logs
         run: |
           kubectl -n k8s-pause-system logs deploy/k8s-pause
@@ -80,6 +93,7 @@ jobs:
         if: failure()
         run: |
           kubectl -n kube-system describe pods
+          kubectl -n podinfo get pods
           kubectl -n k8s-pause-system describe pods
           kubectl -n k8s-pause-system get all
           kubectl -n k8s-pause-system logs deploy/k8s-pause

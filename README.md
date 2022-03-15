@@ -15,7 +15,7 @@ This controller makes this missing feature possible.
 
 Suspend:
 ```
-kubectl annotate ns/my-namespace k8s-pause/suspended="true" --overwrite
+kubectl annotate ns/my-namespace k8s-pause/suspend="true" --overwrite
 ```
 
 Resume:
@@ -40,5 +40,5 @@ Available env variables:
 | `PROBE_ADDR` | The address of the probe endpoints binds to. | `:9557` |
 | `ENABLE_LEADER_ELECTION` | Enable leader election for controller manager. | `false` |
 | `LEADER_ELECTION_NAMESPACE` | Change the leader election namespace. This is by default the same where the controller is deployed. | `` |
-| `NAMESPACES` | The controller listens by default for all namespaces. This may be limited to a comma delimted list of dedicated namespaces. | `` |
+| `NAMESPACES` | The controller listens by default for all namespaces. This may be limited to a comma delimited list of dedicated namespaces. | `` |
 | `CONCURRENT` | The number of concurrent reconcile workers.  | `4` |
