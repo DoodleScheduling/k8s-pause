@@ -86,7 +86,7 @@ jobs:
         run: bash ./scripts/e2e-test.sh
       - name: Logs
         run: |
-          kubectl -n k8s-pause-system logs deploy/k8s-pause
+          kubectl -n k8s-pause-system logs deploy/k8s-pause-controller-manager
       - name: Debug failure
         if: failure()
         run: |
