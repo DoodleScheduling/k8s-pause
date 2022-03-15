@@ -88,10 +88,10 @@ jobs:
         run: |
           kubectl version
           kubectl annotate ns podinfo k8s-pause/suspend=true --overwrite
-          kubectl wait -n podinfo --timeout=1m --for=jsonpath='{.status.phase}'=Suspended pods --all
+          kubectl wait -n podinfo --timeout=2m --for=jsonpath='{.status.phase}'=Suspended pods --all
 
           kubectl annotate ns podinfo k8s-pause/suspend=false --overwrite
-          kubectl wait -n podinfo --timeout=1m --for=jsonpath='{.status.phase}'=Running pods --all
+          kubectl wait -n podinfo --timeout=2m --for=jsonpath='{.status.phase}'=Running pods --all
       - name: Logs
         run: |
           kubectl -n k8s-pause-system logs deploy/k8s-pause
