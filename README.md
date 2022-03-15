@@ -20,7 +20,7 @@ kubectl annotate ns/my-namespace k8s-pause/suspend="true" --overwrite
 
 Resume:
 ```
-kubectl annotate ns/my-namespace k8s-pause/suspended="false" --overwrite
+kubectl annotate ns/my-namespace k8s-pause/suspend="false" --overwrite
 ```
 
 ## Helm chart

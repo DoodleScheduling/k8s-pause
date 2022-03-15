@@ -48,7 +48,7 @@ jobs:
       - name: Setup envtest
         uses: fluxcd/pkg/actions/envtest@main
         with:
-          version: "1.23.0"
+          version: "1.19.0"
       - name: Setup Helm
         uses: fluxcd/pkg/actions/helm@main
       - name: Run controller tests
@@ -62,6 +62,7 @@ jobs:
           fi
       - name: Build container image
         run: |
+          kubectl version
           make docker-build IMG=test/k8s-pause:latest BUILD_PLATFORMS=linux/amd64 \
             BUILD_ARGS="--cache-from=type=local,src=/tmp/.buildx-cache \
             --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max"
