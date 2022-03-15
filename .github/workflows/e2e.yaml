@@ -64,6 +64,9 @@ jobs:
             echo 'run make test and commit changes'
             exit 1
           fi
+      - name: Deploy certmanager
+        run: |
+          kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.7.1/cert-manager.yaml
       - name: Build container image
         run: |
           kubectl version
