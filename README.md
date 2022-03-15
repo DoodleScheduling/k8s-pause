@@ -15,17 +15,32 @@ This controller makes this missing feature possible.
 
 Suspend:
 ```
-kubectl annotate ns/my-namespace k8s-pause/suspend="true" --overwrite
+kubectl annotate ns/my-namespace k8s-pause/suspend=true --overwrite
 ```
 
 Resume:
 ```
-kubectl annotate ns/my-namespace k8s-pause/suspend="false" --overwrite
+kubectl annotate ns/my-namespace k8s-pause/suspend=false --overwrite
 ```
 
-## Helm chart
+## Details
 
-Please see [chart/k8s-pause](https://github.com/DoodleScheduling/k8s-pause) for the helm chart docs.
+The suspend flag on namespace level will affect only but any pods. It will not touch any resources besides pods.
+However it guarantees that no pod will be scheduled if the namespace is suspended no matter from where and how the pod is created.
+Once the namespace is resumed it will schedule all suspended pods.
+
+There is no reason to downscale deployments, statefulsets or any other kind of workloads, k8s-pause will handle any workloads within a namespace.
+
+
+## Installation
+
+### Helm
+
+Please see [chart/k8s-pause](https://github.com/DoodleScheduling/k8s-pause/tree/master/chart/k8s-pause) for the helm chart docs.
+
+### Manifests/kustomize
+
+Alternatively you may get the bundled manifests in each release to deploy it using kustomize or use them directly.
 
 ## Configure the controller
 
@@ -41,4 +56,4 @@ Available env variables:
 | `ENABLE_LEADER_ELECTION` | Enable leader election for controller manager. | `false` |
 | `LEADER_ELECTION_NAMESPACE` | Change the leader election namespace. This is by default the same where the controller is deployed. | `` |
 | `NAMESPACES` | The controller listens by default for all namespaces. This may be limited to a comma delimited list of dedicated namespaces. | `` |
-| `CONCURRENT` | The number of concurrent reconcile workers.  | `4` |
+| `CONCURRENT` | The number of concurrent reconcile workers.  | `2` |

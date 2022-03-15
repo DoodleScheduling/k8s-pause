@@ -25,8 +25,13 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
+
+//+kubebuilder:rbac:groups=core,resources=namespaces,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core,resources=namespaces/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=core,resources=namespaces/finalizers,verbs=update
 
 const (
 	previousSchedulerName = "k8s-pause/previousScheduler"
@@ -39,9 +44,17 @@ type NamespaceReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-//+kubebuilder:rbac:groups=core,resources=namespaces,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=core,resources=namespaces/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=core,resources=namespaces/finalizers,verbs=update
+type NamespaceReconcilerOptions struct {
+	MaxConcurrentReconciles int
+}
+
+// SetupWithManager sets up the controller with the Manager.
+func (r *NamespaceReconciler) SetupWithManager(mgr ctrl.Manager, opts NamespaceReconcilerOptions) error {
+	return ctrl.NewControllerManagedBy(mgr).
+		For(&corev1.Namespace{}).
+		WithOptions(controller.Options{MaxConcurrentReconciles: opts.MaxConcurrentReconciles}).
+		Complete(r)
+}
 
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.11.0/pkg/reconcile
@@ -78,11 +91,6 @@ func (r *NamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	} else {
 		logger.Info("make sure namespace is resumed")
 		res, err = r.resume(ctx, ns, logger)
-	}
-
-	// Update status after reconciliation.
-	if err = r.patchStatus(ctx, &ns); err != nil {
-		return ctrl.Result{Requeue: true}, err
 	}
 
 	return res, err
@@ -169,21 +177,4 @@ func (r *NamespaceReconciler) suspend(ctx context.Context, ns corev1.Namespace, 
 	}
 
 	return ctrl.Result{}, nil
-}
-
-func (r *NamespaceReconciler) patchStatus(ctx context.Context, ns *corev1.Namespace) error {
-	key := client.ObjectKeyFromObject(ns)
-	latest := &corev1.Namespace{}
-	if err := r.Client.Get(ctx, key, latest); err != nil {
-		return err
-	}
-
-	return r.Client.Status().Patch(ctx, ns, client.MergeFrom(latest))
-}
-
-// SetupWithManager sets up the controller with the Manager.
-func (r *NamespaceReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
-		For(&corev1.Namespace{}).
-		Complete(r)
 }

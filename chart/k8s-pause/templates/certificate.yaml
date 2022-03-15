@@ -5,7 +5,7 @@
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
-  name: {{ template "k8s-pause.fullname" . }}
+  name: {{ include "k8s-pause.certManager.selfsignedIssuerName" . }}
   labels:
     app.kubernetes.io/name: {{ include "k8s-pause.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
@@ -19,7 +19,7 @@ spec:
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: {{ template "k8s-pause.fullname" . }}
+  name: {{ include "k8s-pause.certManager.servingCertName" . }}
   labels:
     app.kubernetes.io/name: {{ include "k8s-pause.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}

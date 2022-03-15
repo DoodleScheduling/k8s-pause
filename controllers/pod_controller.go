@@ -25,8 +25,13 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
+
+//+kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core,resources=pods/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=core,resources=pods/finalizers,verbs=update
 
 const (
 	phaseSuspended = "Suspended"
@@ -39,9 +44,17 @@ type PodReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-//+kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=core,resources=pods/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=core,resources=pods/finalizers,verbs=update
+type PodReconcilerOptions struct {
+	MaxConcurrentReconciles int
+}
+
+// SetupWithManager sets up the controller with the Manager.
+func (r *PodReconciler) SetupWithManager(mgr ctrl.Manager, opts PodReconcilerOptions) error {
+	return ctrl.NewControllerManagedBy(mgr).
+		For(&corev1.Pod{}).
+		WithOptions(controller.Options{MaxConcurrentReconciles: opts.MaxConcurrentReconciles}).
+		Complete(r)
+}
 
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.11.0/pkg/reconcile
@@ -81,11 +94,4 @@ func (r *PodReconciler) patchStatus(ctx context.Context, pod *corev1.Pod) error 
 	}
 
 	return r.Client.Status().Patch(ctx, pod, client.MergeFrom(latest))
-}
-
-// SetupWithManager sets up the controller with the Manager.
-func (r *PodReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
-		For(&corev1.Pod{}).
-		Complete(r)
 }
