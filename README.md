@@ -1,6 +1,6 @@
 # k8s-pause
 
-[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/4787/badge)](https://bestpractices.coreinfrastructure.org/projects/4787)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/5713/badge)](https://bestpractices.coreinfrastructure.org/projects/5713)
 [![e2e](https://github.com/DoodleScheduling/k8s-pause/workflows/e2e/badge.svg)](https://github.com/DoodleScheduling/k8s-pause/actions)
 [![report](https://goreportcard.com/badge/github.com/DoodleScheduling/k8s-pause)](https://goreportcard.com/report/github.com/DoodleScheduling/k8s-pause)
 [![license](https://img.shields.io/github/license/DoodleScheduling/k8s-pause.svg)](https://github.com/DoodleScheduling/k8s-pause/blob/master/LICENSE)
