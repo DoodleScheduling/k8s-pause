@@ -7,10 +7,11 @@ Installs the [k8s-pause](https://github.com/DoodleScheduling/k8s-pause).
 To install the chart with the release name `k8s-pause`:
 
 ```console
+helm repo add k8s-pause https://doodlescheduling.github.io/k8s-pause/
 helm upgrade --install k8s-pause k8s-pause/k8s-pause
 ```
 
-This command deploys the k8s-pause with the default configuration. The [configuration](#configuration) section lists the parameters that can be configured during installation.
+This command deploys k8s-pause with the default configuration. The [configuration](#configuration) section lists the parameters that can be configured during installation.
 
 ## Using the Chart
 
