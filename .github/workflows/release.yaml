@@ -70,7 +70,6 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           mkdir -p config/release
-          kustomize build ./config/crd > ./config/release/${{ env.CONTROLLER }}.crds.yaml
           kustomize build ./config/manager > ./config/release/${{ env.CONTROLLER }}.deployment.yaml
           echo '[CHANGELOG](https://github.com/DoodleScheduling/${{ env.CONTROLLER }}/blob/master/CHANGELOG.md)' > ./config/release/notes.md
       - uses: anchore/sbom-action/download-syft@v0
