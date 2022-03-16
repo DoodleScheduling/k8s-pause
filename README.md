@@ -40,9 +40,9 @@ Currently it is required to have [certmanager](https://cert-manager.io/docs/inst
 ## Bypass namespace
 The controller will intercept all pod write communication. The namespace which hosts k8s-pause needs to be bypassed otherwise you won't be able to create
 pods anymore!
-By default you can annotate the namespace using:
+By default you can label the namespace using:
 ```
-kubectl annotate ns/my-namespace control-plane=controller-manager
+kubectl label ns/my-namespace control-plane=controller-manager
 ```
 
 Both kustomize and helm deployments will have this exception by default. You can configure a different rule in each way of deployment.
