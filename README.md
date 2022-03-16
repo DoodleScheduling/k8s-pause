@@ -37,6 +37,17 @@ There is no reason to downscale deployments, statefulsets or any other kind of w
 ### Requirements
 Currently it is required to have [certmanager](https://cert-manager.io/docs/installation/) deployed on the cluster with either kustomize or helm deployment.
 
+## Bypass namespace
+The controller will intercept all pod write communication. The namespace which hosts k8s-pause needs to be bypassed otherwise you won't be able to create
+pods anymore!
+By default you can annotate the namespace using:
+```
+kubectl annotate ns/my-namespace control-plane=controller-manager
+```
+
+Both kustomize and helm deployments will have this exception by default. You can configure a different rule in each way of deployment.
+**Note**: It is also good practice to have other namespaces bypassed which should not support k8s-pause. For instance `kube-system` is a good example.
+
 ### Helm
 
 Please see [chart/k8s-pause](https://github.com/DoodleScheduling/k8s-pause/tree/master/chart/k8s-pause) for the helm chart docs.
