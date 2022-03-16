@@ -86,6 +86,10 @@ spec:
       {{- toYaml .Values.extraContainers | nindent 6 }}
       {{- end }}
       volumes:
+      - name: cert
+        secret:
+          defaultMode: 420
+          secretName: {{ include "k8s-pause.certManager.servingCertName" . }}
       {{- range .Values.secretMounts }}
       - name: {{ .name }}
         secret:
@@ -101,10 +105,5 @@ spec:
       priorityClassName: {{ .Values.priorityClassName }}
       {{- end }}
       terminationGracePeriodSeconds: 30
-      volumes:
-      - name: cert
-        secret:
-          defaultMode: 420
-          secretName: {{ include "k8s-pause.certManager.servingCertName" . }}
       tolerations:
         {{- toYaml .Values.tolerations | nindent 8 }}
