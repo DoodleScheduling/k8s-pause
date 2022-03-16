@@ -5,7 +5,6 @@ on:
   push:
     branches:
       - master
-      - fix-volumes-chart
 
 jobs:
   kind:
