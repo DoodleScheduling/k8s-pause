@@ -31,7 +31,7 @@ spec:
         - /manager
         args:
         - --enable-leader-election
-        image: controller:latest
+        image: ghcr.io/doodlescheduling/k8s-pause:latest
         name: manager
         imagePullPolicy: Never
         securityContext:

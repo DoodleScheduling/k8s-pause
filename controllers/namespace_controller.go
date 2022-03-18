@@ -18,11 +18,14 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/watch"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -39,7 +42,7 @@ const (
 
 // NamespaceReconciler reconciles a Namespace object
 type NamespaceReconciler struct {
-	client.Client
+	Client client.WithWatch
 	Log    logr.Logger
 	Scheme *runtime.Scheme
 }
@@ -98,7 +101,7 @@ func (r *NamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 
 func (r *NamespaceReconciler) resume(ctx context.Context, ns corev1.Namespace, logger logr.Logger) (ctrl.Result, error) {
 	var list corev1.PodList
-	if err := r.List(ctx, &list, client.InNamespace(ns.Name)); err != nil {
+	if err := r.Client.List(ctx, &list, client.InNamespace(ns.Name)); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -112,6 +115,16 @@ func (r *NamespaceReconciler) resume(ctx context.Context, ns corev1.Namespace, l
 				}
 			} else {
 				clone := pod.DeepCopy()
+
+				// We won't be able to create the object with the same resource version
+				clone.ObjectMeta.ResourceVersion = ""
+
+				// Remove assigned node to avoid scheduling
+				clone.Spec.NodeName = ""
+
+				// Reset status, not needed as its ignored but nice
+				clone.Status = v1.PodStatus{}
+
 				if scheduler, ok := clone.Annotations[previousSchedulerName]; ok {
 					clone.Spec.SchedulerName = scheduler
 					delete(clone.Annotations, previousSchedulerName)
@@ -119,15 +132,9 @@ func (r *NamespaceReconciler) resume(ctx context.Context, ns corev1.Namespace, l
 					clone.Spec.SchedulerName = ""
 				}
 
-				err := r.Client.Delete(ctx, &pod)
+				err := r.recreatePod(ctx, pod, clone)
 				if err != nil {
-					logger.Error(err, "failed to delete pod while resuming", "pod", pod.Name)
-					continue
-				}
-
-				err = r.Client.Create(ctx, clone)
-				if err != nil {
-					logger.Error(err, "failed to recreate pod with previous scheduler while resuming", "pod", pod.Name)
+					logger.Error(err, "recrete unowned pod failed", "pod", pod.Name)
 				}
 			}
 		}
@@ -136,9 +143,41 @@ func (r *NamespaceReconciler) resume(ctx context.Context, ns corev1.Namespace, l
 	return ctrl.Result{}, nil
 }
 
+func (r *NamespaceReconciler) recreatePod(ctx context.Context, pod v1.Pod, clone *v1.Pod) error {
+	list := v1.PodList{}
+	watcher, err := r.Client.Watch(ctx, &list)
+	if err != nil {
+		return fmt.Errorf("failed to start watch stream for pod %s: %w", pod.Name, err)
+	}
+
+	ch := watcher.ResultChan()
+
+	err = r.Client.Delete(ctx, &pod)
+	if err != nil {
+		return fmt.Errorf("failed to delete pod %s: %w", pod.Name, err)
+	}
+
+	// Wait for delete event before we can attempt create the clone
+	for event := range ch {
+		if event.Type == watch.Deleted {
+			if val, ok := event.Object.(*v1.Pod); ok && val.Name == pod.Name {
+				err = r.Client.Create(ctx, clone)
+				if err != nil {
+					return fmt.Errorf("failed to recreate pod %s: %w", pod.Name, err)
+				}
+
+				watcher.Stop()
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 func (r *NamespaceReconciler) suspend(ctx context.Context, ns corev1.Namespace, logger logr.Logger) (ctrl.Result, error) {
 	var list corev1.PodList
-	if err := r.List(ctx, &list, client.InNamespace(ns.Name)); err != nil {
+	if err := r.Client.List(ctx, &list, client.InNamespace(ns.Name)); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -154,6 +193,16 @@ func (r *NamespaceReconciler) suspend(ctx context.Context, ns corev1.Namespace, 
 				// If there is no owner lets clone the pod and swap the scheduler
 			} else {
 				clone := pod.DeepCopy()
+				// We won't be able to create the object with the same resource version
+				clone.ObjectMeta.ResourceVersion = ""
+
+				// Remove assigned node to avoid scheduling
+				clone.Spec.NodeName = ""
+
+				// Reset status, not needed as its ignored but nice
+				clone.Status = v1.PodStatus{}
+
+				// Assign our own scheduler to avoid the default scheduler interfer with the workload
 				clone.Spec.SchedulerName = schedulerName
 
 				if clone.Annotations == nil {
@@ -162,15 +211,9 @@ func (r *NamespaceReconciler) suspend(ctx context.Context, ns corev1.Namespace, 
 
 				clone.Annotations[previousSchedulerName] = pod.Spec.SchedulerName
 
-				err := r.Client.Delete(ctx, &pod)
+				err := r.recreatePod(ctx, pod, clone)
 				if err != nil {
-					logger.Error(err, "failed to delete pod while suspending", "pod", pod.Name)
-					continue
-				}
-
-				err = r.Client.Create(ctx, clone)
-				if err != nil {
-					logger.Error(err, "failed to recreate pod with k8s-pause scheduler while suspending", "pod", pod.Name)
+					logger.Error(err, "recrete unowned pod failed", "pod", pod.Name)
 				}
 			}
 		}
