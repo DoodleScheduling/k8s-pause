@@ -149,8 +149,8 @@ func main() {
 	setupLog.Info("registering webhooks to the webhook server")
 	hookServer.Register("/mutate-v1-pod", &webhook.Admission{
 		Handler: &controllers.Scheduler{
-			Client: mgr.GetClient()
-		}
+			Client: mgr.GetClient(),
+		},
 	})
 
 	//+kubebuilder:scaffold:builder
