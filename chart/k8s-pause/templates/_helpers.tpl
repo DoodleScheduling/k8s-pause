@@ -42,17 +42,6 @@ Create the name of the service account to use
 {{- end -}}
 {{- end -}}
 
-{{/*
-Determine secret name, can either be the self-created of an existing one
-*/}}
-{{- define "k8s-pause.secretName" -}}
-{{- if .Values.existingSecret.name -}}
-    {{- .Values.existingSecret.name -}}
-{{- else -}}
-    {{ include "k8s-pause.fullname" . }}
-{{- end -}}
-{{- end -}}
-
 {{- define "k8s-pause.certManager.selfsignedIssuerName" -}}
 {{- include "k8s-pause.fullname" . }}-selfsigned-issuer
 {{- end }}
