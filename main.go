@@ -55,7 +55,6 @@ func init() {
 var (
 	metricsAddr             = ":9556"
 	probesAddr              = ":9557"
-	webhookPort             = 9443
 	enableLeaderElection    = false
 	leaderElectionNamespace string
 	namespaces              = ""
@@ -65,7 +64,6 @@ var (
 func main() {
 	flag.StringVar(&metricsAddr, "metrics-addr", metricsAddr, "The address of the metric endpoint binds to.")
 	flag.StringVar(&probesAddr, "probe-addr", probesAddr, "The address of the probe endpoints bind to.")
-	flag.IntVar(&webhookPort, "webhook-port", webhookPort, "The address of the webhook endpoint bind to.")
 	flag.BoolVar(&enableLeaderElection, "enable-leader-election", enableLeaderElection,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
@@ -149,7 +147,11 @@ func main() {
 	hookServer := mgr.GetWebhookServer()
 
 	setupLog.Info("registering webhooks to the webhook server")
-	hookServer.Register("/mutate-v1-pod", &webhook.Admission{Handler: &controllers.Scheduler{Client: mgr.GetClient()}})
+	hookServer.Register("/mutate-v1-pod", &webhook.Admission{
+		Handler: &controllers.Scheduler{
+			Client: mgr.GetClient()
+		}
+	})
 
 	//+kubebuilder:scaffold:builder
 

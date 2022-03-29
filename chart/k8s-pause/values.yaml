@@ -106,9 +106,9 @@ serviceAccount:
   # fullname template.
   name:
 
-# The controller needs full access to all secrets cluster wide.
-# Hower you might disable the cluster rule and manually add fine graded rules.
+# Cluster scoped RBAC
 clusterRBAC:
+  # The controller needs read access to namespaces as well as read/delete access to pods.
   enabled: true
 
 # Prometheus operator PodMonitor

@@ -59,8 +59,6 @@ Alternatively you may get the bundled manifests in each release to deploy it usi
 ## Configure the controller
 
 You may change base settings for the controller using env variables (or alternatively command line arguments).
-It is possible to set defaults (fallback values) for the vault address and also all TLS settings.
-
 Available env variables:
 
 | Name  | Description | Default |
