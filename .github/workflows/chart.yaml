@@ -42,5 +42,9 @@ jobs:
         uses: helm/kind-action@v1.2.0
         if: steps.list-changed.outputs.changed == 'true'
 
+      - name: Deploy certmanager
+        run: |
+          kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.7.1/cert-manager.yaml
+
       - name: Run chart-testing (install)
         run: ct install --chart-dirs chart
