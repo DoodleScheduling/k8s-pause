@@ -1,4 +1,4 @@
-# k8svault controller helm chart
+# k8s-pause helm chart
 
 Installs the [k8s-pause](https://github.com/DoodleScheduling/k8s-pause).
 
