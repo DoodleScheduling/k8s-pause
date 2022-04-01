@@ -3,6 +3,27 @@ entries:
   k8s-pause:
   - apiVersion: v2
     appVersion: v0.1.1
+    created: "2022-04-01T11:22:14.518805992Z"
+    description: Suspend and resume kubernetes namespaces
+    digest: e20ee0880c2d193acf4459d3d733546dc005748ed3cd8989e2f72602d0c7eb52
+    home: https://github.com/DoodleScheduling/k8s-pause
+    keywords:
+    - kubernetes-controller
+    - admission-controller
+    - pause
+    - resume
+    - suspend
+    maintainers:
+    - email: devops@doodle.com
+      name: devops
+    name: k8s-pause
+    sources:
+    - https://github.com/DoodleScheduling/k8s-pause
+    urls:
+    - https://github.com/DoodleScheduling/k8s-pause/releases/download/k8s-pause-0.1.4/k8s-pause-0.1.4.tgz
+    version: 0.1.4
+  - apiVersion: v2
+    appVersion: v0.1.1
     created: "2022-03-24T09:55:25.233195774Z"
     description: Suspend and resume kubernetes namespaces
     digest: 2d57cf51df8f1da5c28f77494eb5823c30442d85502cafe2b34014ff6f7431cd
@@ -85,4 +106,4 @@ entries:
     urls:
     - https://github.com/DoodleScheduling/k8s-pause/releases/download/k8s-pause-0.1.0/k8s-pause-0.1.0.tgz
     version: 0.1.0
-generated: "2022-03-24T09:55:25.233212874Z"
+generated: "2022-04-01T11:22:14.518857093Z"
