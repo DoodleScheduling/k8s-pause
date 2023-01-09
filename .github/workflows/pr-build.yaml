@@ -1,0 +1,73 @@
+name: pr-build
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b #v3
+      - name: Setup Go
+        uses: actions/setup-go@6edd4406fa81c3da01a34fa6f6343087c207a568 #v3.5.0
+        with:
+          go-version: 1.19.x
+      - name: Restore Go cache
+        uses: actions/cache@4723a57e26efda3a62cbde1812113b730952852d #v3.2.2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: fmt
+        run: make fmt
+      - name: vet
+        run: make vet
+      - name: lint
+        run: make lint
+      - name: test
+        run: make test
+      - name: build
+        run: make build
+      - name: Send go coverage report
+        uses: shogo82148/actions-goveralls@31ee804b8576ae49f6dc3caa22591bc5080e7920 #v1.6.0
+        with:
+          path-to-profile: coverage.out
+      - name: Check if working tree is dirty
+        run: |
+          if [[ $(git diff --stat) != '' ]]; then
+            git --no-pager diff
+            echo 'run <make test> and commit changes'
+            exit 1
+          fi
+      - name: Build container image
+        run: |
+          make docker-build IMG=test/k8s-pause:latest BUILD_PLATFORMS=linux/amd64 \
+            BUILD_ARGS="--cache-from=type=local,src=/tmp/.buildx-cache \
+            --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max"
+      - name: Setup Kubernetes
+        uses: engineerd/setup-kind@aa272fe2a7309878ffc2a81c56cfe3ef108ae7d0 #v0.5.0
+        with:
+          version: v0.17.0
+      - name: Load test image
+        run: kind load docker-image test/k8s-pause:latest
+      - name: Deploy controller
+        run: make deploy IMG=test/k8s-pause:latest
+      - name: Setup prometheus
+        run: bash -e ./scripts/e2e/setup-prometheus.sh
+      - name: Run k8s-pause tests
+        run: bash -e ./scripts/e2e/test.sh
+      - name: Debug failure
+        if: failure()
+        run: |
+          kubectl -n kube-system describe pods
+          kubectl -n prometheus get pods
+          kubectl -n k8sprom-patch-system describe pods
+          kubectl -n k8sprom-patch-system get all
+          kubectl -n k8sprom-patch-system logs deploy/k8s-pause
+          kubectl -n default get prometheuspatchrules -o yaml

@@ -18,14 +18,23 @@ metadata:
     {{- toYaml .Values.annotations | nindent 4 }}
 spec:
   podMetricsEndpoints:
-  - port: metrics
-    path: {{ .Values.metricsPath }}
+  - path: {{ .Values.metricsPath }}
+    {{- if .Values.kubeRBACProxy.enabled }}  
+    port: https
+    scheme: https
+    bearerTokenSecret: 
+      key: token
+      name: {{ template "k8s-pause.serviceAccountName" . }}
+    tlsConfig:
+      insecureSkipVerify: true
+    {{- else }}
+    port: metrics
+    {{- end }}
     interval: {{ .Values.podMonitor.interval }}
     scrapeTimeout: {{ .Values.podMonitor.scrapeTimeout }}
     {{- if .Values.podMonitor.metricRelabelings }}
     metricRelabelings: {{ toYaml .Values.podMonitor.metricRelabelings | nindent 4 }}
     {{- end }}
-
   namespaceSelector:
     matchNames:
     - {{ .Release.Namespace }}

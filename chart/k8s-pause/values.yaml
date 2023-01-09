@@ -132,4 +132,7 @@ prometheusRule:
   labels: {}
   rules: []
 
+kubeRBACProxy:
+  enabled: true
+
 tolerations: []
