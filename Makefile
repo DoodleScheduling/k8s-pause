@@ -59,6 +59,10 @@ tidy: ## Run go mod tidy
 vet: ## Run go vet against code.
 	go vet ./...
 
+.PHONY: lint
+lint: golangci-lint ## Run golangci-lint against code
+	$(GOLANGCI_LINT) run --timeout=2m ./...
+
 .PHONY: test
 test: manifests generate fmt vet tidy envtest ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out -race
