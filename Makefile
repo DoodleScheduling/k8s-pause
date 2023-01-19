@@ -59,10 +59,6 @@ tidy: ## Run go mod tidy
 vet: ## Run go vet against code.
 	go vet ./...
 
-.PHONY: lint
-lint: golangci-lint ## Run golangci-lint against code
-	$(GOLANGCI_LINT) run --timeout=2m ./...
-
 .PHONY: test
 test: manifests generate fmt vet tidy envtest ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out -race
@@ -112,11 +108,6 @@ CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
 .PHONY: controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
 	$(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@v0.8.0)
-
-GOLANGCI_LINT = $(GOBIN)/golangci-lint
-.PHONY: golangci-lint
-golangci-lint: ## Download golint locally if necessary
-	$(call go-install-tool,$(GOLANGCI_LINT),github.com/golangci/golangci-lint/cmd/golangci-lint@v1.49.0)
 
 KUSTOMIZE = $(shell pwd)/bin/kustomize
 .PHONY: kustomize
