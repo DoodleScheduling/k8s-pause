@@ -7,10 +7,8 @@ maintainers:
   email: devops@doodle.com
 keywords:
 - kubernetes-controller
-- admission-controller
-- pause
-- resume
-- suspend
+- prometheus
+- kubernetes-patch
 name: k8s-pause
 sources:
 - https://github.com/DoodleScheduling/k8s-pause
