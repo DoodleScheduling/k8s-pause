@@ -11,17 +11,17 @@ image:
   repository: ghcr.io/doodlescheduling/k8s-pause
   tag:
 
-certManager:	
-  enabled: true	
+certManager:
+  enabled: true
 
-webhook:	
-  enabled: true	
-  port: 9443	
-  namespaceSelector: |	
-    matchExpressions:	
-    - key: control-plane	
-      operator: NotIn	
-      values: ["controller-manager"]	
+webhook:
+  enabled: true
+  port: 9443
+  namespaceSelector: |
+    matchExpressions:
+    - key: control-plane
+      operator: NotIn
+      values: ["controller-manager"]
 
 imagePullSecrets: []
 
