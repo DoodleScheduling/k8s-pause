@@ -59,9 +59,13 @@ tidy: ## Run go mod tidy
 vet: ## Run go vet against code.
 	go vet ./...
 
+.PHONY: lint
+lint: golangci-lint ## Run golangci-lint against code
+	$(GOLANGCI_LINT) run --timeout=2m ./...
+
 .PHONY: test
 test: manifests generate fmt vet tidy envtest ## Run tests.
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out -race
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -v -coverprofile coverage.out -race
 
 ##@ Build
 
@@ -73,8 +77,18 @@ build: generate fmt vet tidy ## Build manager binary.
 run: manifests generate fmt vet tidy ## Run a controller from your host.
 	go run ./main.go
 
+# Find or download gen-crd-api-reference-docs
+GEN_CRD_API_REFERENCE_DOCS = $(GOBIN)/gen-crd-api-reference-docs
+.PHONY: gen-crd-api-reference-docs
+gen-crd-api-reference-docs:
+	$(call go-install-tool,$(GEN_CRD_API_REFERENCE_DOCS),github.com/ahmetb/gen-crd-api-reference-docs@v0.3.0)
+
+# Generate API reference documentation
+api-docs: gen-crd-api-reference-docs
+	$(GEN_CRD_API_REFERENCE_DOCS) -api-dir=./api/v1beta1 -config=./hack/api-docs/config.json -template-dir=./hack/api-docs/template -out-file=./docs/api/v1beta1.md
+
 .PHONY: docker-build
-docker-build: test ## Build docker image with the manager.
+docker-build:
 	docker build -t ${IMG} .
 
 .PHONY: docker-push
@@ -89,7 +103,7 @@ endif
 
 .PHONY: install
 install: manifests kustomize ## Install CRDs into the K8s cluster specified in ~/.kube/config.
-	$(KUSTOMIZE) build config/base/crd | kubectl apply -f -
+	$(KUSTOMIZE) build config/base/crd | kubectl apply -f
 
 .PHONY: uninstall
 uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
@@ -97,38 +111,42 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 
 .PHONY: deploy
 deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
-	cd config/manager && $(KUSTOMIZE) edit set image ghcr.io/doodlescheduling/k8s-pause=${IMG}
-	$(KUSTOMIZE) build config/base/default | kubectl apply -f -
+	cd config/base/manager && $(KUSTOMIZE) edit set image ghcr.io/doodlescheduling/k8s-pause=${IMG}
+	$(KUSTOMIZE) build config/default | kubectl apply -f -
 
 .PHONY: undeploy
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
-	$(KUSTOMIZE) build config/base/default | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
+	$(KUSTOMIZE) build config/default | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
 
-CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
+CONTROLLER_GEN = $(GOBIN)/controller-gen
 .PHONY: controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
-	$(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@v0.8.0)
+	$(call go-install-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@v0.10.0)
 
-KUSTOMIZE = $(shell pwd)/bin/kustomize
+GOLANGCI_LINT = $(GOBIN)/golangci-lint
+.PHONY: golangci-lint
+golangci-lint: ## Download golint locally if necessary
+	$(call go-install-tool,$(GOLANGCI_LINT),github.com/golangci/golangci-lint/cmd/golangci-lint@v1.49.0)
+
+KUSTOMIZE = $(GOBIN)/kustomize
 .PHONY: kustomize
 kustomize: ## Download kustomize locally if necessary.
-	$(call go-get-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v3@v3.8.7)
+	$(call go-install-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v4@v4.5.7)
 
-ENVTEST = $(shell pwd)/bin/setup-envtest
+ENVTEST = $(GOBIN)/setup-envtest
 .PHONY: envtest
 envtest: ## Download envtest-setup locally if necessary.
-	$(call go-get-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@latest)
+	$(call go-install-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@latest)
 
-# go-get-tool will 'go get' any package $2 and install it to $1.
-PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
-define go-get-tool
+# go-install-tool will 'go install' any package $2 and install it to $1
+define go-install-tool
 @[ -f $(1) ] || { \
 set -e ;\
 TMP_DIR=$$(mktemp -d) ;\
 cd $$TMP_DIR ;\
 go mod init tmp ;\
 echo "Downloading $(2)" ;\
-GOBIN=$(PROJECT_DIR)/bin go get $(2) ;\
+env -i bash -c "GOBIN=$(GOBIN) PATH=$(PATH) GOPATH=$(shell go env GOPATH) GOCACHE=$(shell go env GOCACHE) go install $(2)" ;\
 rm -rf $$TMP_DIR ;\
 }
 endef
