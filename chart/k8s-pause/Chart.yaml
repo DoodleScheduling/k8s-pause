@@ -9,7 +9,7 @@ keywords:
 - kubernetes-controller
 - admission-controller
 - pause
-- resume	
+- resume
 - suspend
 name: k8s-pause
 sources:
