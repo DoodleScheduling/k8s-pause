@@ -28,6 +28,8 @@ jobs:
         run: make fmt
       - name: vet
         run: make vet
+      - name: lint
+        run: make lint
       - name: test
         run: make test
       - name: build
