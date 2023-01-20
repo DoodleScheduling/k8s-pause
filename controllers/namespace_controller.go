@@ -88,7 +88,7 @@ func (r *NamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 
 	var res ctrl.Result
 
-	if suspend == true {
+	if suspend {
 		logger.Info("make sure namespace is suspended")
 		res, err = r.suspend(ctx, ns, logger)
 	} else {

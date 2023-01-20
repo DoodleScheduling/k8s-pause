@@ -50,7 +50,7 @@ func (a *Scheduler) Handle(ctx context.Context, req admission.Request) admission
 		}
 	}
 
-	if suspend == false {
+	if !suspend {
 		return admission.Response{
 			AdmissionResponse: admissionv1.AdmissionResponse{
 				Allowed: true,
