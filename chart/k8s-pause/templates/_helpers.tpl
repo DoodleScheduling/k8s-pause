@@ -41,3 +41,11 @@ Create the name of the service account to use
     {{ default "default" .Values.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
+
+{{- define "k8s-pause.certManager.selfsignedIssuerName" -}}	
+{{- include "k8s-pause.fullname" . }}-selfsigned-issuer	
+{{- end }}	
+
+{{- define "k8s-pause.certManager.servingCertName" -}}	
+{{- include "k8s-pause.fullname" . }}-serving-cert	
+{{- end }}
