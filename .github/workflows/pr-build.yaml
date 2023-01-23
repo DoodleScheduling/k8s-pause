@@ -45,6 +45,10 @@ jobs:
             echo 'run <make test> and commit changes'
             exit 1
           fi
+      - name: Deploy certmanager
+        run: |
+          kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.7.1/cert-manager.yaml
+          kubectl wait -n cert-manager --for=condition=Ready pods --all
       - name: Build container image
         run: |
           make docker-build IMG=test/k8s-pause:latest BUILD_PLATFORMS=linux/amd64 \
