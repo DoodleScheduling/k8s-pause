@@ -73,7 +73,7 @@ jobs:
           --namespace podinfo \
           --set replicaCount=2
       - name: Run k8s-pause tests
-        run: bash -e ./scripts/e2e/test.sh
+        run: bash -e ./scripts/e2e-test.sh
       - name: Debug failure
         if: failure()
         run: |
