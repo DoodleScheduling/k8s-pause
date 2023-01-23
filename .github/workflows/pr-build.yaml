@@ -62,8 +62,16 @@ jobs:
         run: kind load docker-image test/k8s-pause:latest
       - name: Deploy controller
         run: make deploy IMG=test/k8s-pause:latest
-      - name: Setup prometheus
-        run: bash -e ./scripts/e2e/setup-prometheus.sh
+      - name: Setup podinfo
+        env:
+          PODINFO_VER: ${{ '6.0.3' }}
+        run: |
+          kubectl create ns podinfo
+          helm repo add podinfo https://stefanprodan.github.io/podinfo
+          helm upgrade --install --wait backend podinfo/podinfo \
+          --version $PODINFO_VER \
+          --namespace podinfo \
+          --set replicaCount=2
       - name: Run k8s-pause tests
         run: bash -e ./scripts/e2e/test.sh
       - name: Debug failure
