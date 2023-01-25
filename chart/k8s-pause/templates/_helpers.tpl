@@ -42,10 +42,10 @@ Create the name of the service account to use
 {{- end -}}
 {{- end -}}
 
-{{- define "k8s-pause.certManager.selfsignedIssuerName" -}}	
-{{- include "k8s-pause.fullname" . }}-selfsigned-issuer	
-{{- end }}	
+{{- define "k8s-pause.certManager.selfsignedIssuerName" -}}
+{{- include "k8s-pause.fullname" . }}-selfsigned-issuer
+{{- end }}
 
-{{- define "k8s-pause.certManager.servingCertName" -}}	
-{{- include "k8s-pause.fullname" . }}-serving-cert	
+{{- define "k8s-pause.certManager.servingCertName" -}}
+{{- include "k8s-pause.fullname" . }}-serving-cert
 {{- end }}

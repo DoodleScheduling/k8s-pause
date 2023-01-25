@@ -57,8 +57,8 @@ spec:
         {{- toYaml .Values.extraArgs | nindent 8 }}
         {{- end }}
         ports:
-        - containerPort: {{ .Values.webhook.port }}	
-          name: webhook-server	
+        - containerPort: {{ .Values.webhook.port }}
+          name: webhook-server
           protocol: TCP
         - name: metrics
           containerPort: {{ .Values.metricsPort }}
@@ -75,8 +75,8 @@ spec:
         securityContext:
           {{- toYaml .Values.securityContext | nindent 10 }}
         volumeMounts:
-        - mountPath: /tmp/k8s-webhook-server/serving-certs	
-          name: cert	
+        - mountPath: /tmp/k8s-webhook-server/serving-certs
+          name: cert
           readOnly: true
         {{- range .Values.secretMounts }}
         - name: {{ .name }}
@@ -112,9 +112,9 @@ spec:
       {{- toYaml .Values.extraContainers | nindent 6 }}
       {{- end }}
       volumes:
-      - name: cert	
-        secret:	
-          defaultMode: 420	
+      - name: cert
+        secret:
+          defaultMode: 420
           secretName: {{ include "k8s-pause.certManager.servingCertName" . }}
       {{- range .Values.secretMounts }}
       - name: {{ .name }}

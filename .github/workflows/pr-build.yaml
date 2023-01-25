@@ -78,8 +78,7 @@ jobs:
         if: failure()
         run: |
           kubectl -n kube-system describe pods
-          kubectl -n prometheus get pods
-          kubectl -n k8sprom-patch-system describe pods
-          kubectl -n k8sprom-patch-system get all
-          kubectl -n k8sprom-patch-system logs deploy/k8s-pause
-          kubectl -n default get prometheuspatchrules -o yaml
+          kubectl -n podinfo get pods
+          kubectl -n k8s-pause-system describe pods
+          kubectl -n k8s-pause-system get all
+          kubectl -n k8s-pause-system logs deploy/k8s-pause-controller-manager manager

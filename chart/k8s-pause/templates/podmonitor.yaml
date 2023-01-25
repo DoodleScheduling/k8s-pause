@@ -19,10 +19,10 @@ metadata:
 spec:
   podMetricsEndpoints:
   - path: {{ .Values.metricsPath }}
-    {{- if .Values.kubeRBACProxy.enabled }}  
+    {{- if .Values.kubeRBACProxy.enabled }}
     port: https
     scheme: https
-    bearerTokenSecret: 
+    bearerTokenSecret:
       key: token
       name: {{ template "k8s-pause.serviceAccountName" . }}
     tlsConfig:
