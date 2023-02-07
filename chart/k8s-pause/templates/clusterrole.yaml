@@ -14,22 +14,23 @@ rules:
 - apiGroups:
   - ""
   resources:
-    - namespaces
+  - namespaces
   verbs:
-    - get
-    - list
-    - watch
-    - patch
+  - get
+  - list
+  - patch
+  - update
+  - watch
 - apiGroups:
   - ""
   resources:
-    - pods
+  - pods
   verbs:
-    - get
-    - list
-    - watch
-    - delete
-    - create
+  - get
+  - list
+  - watch
+  - delete
+  - update
 - apiGroups:
   - ""
   resources:

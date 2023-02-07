@@ -108,8 +108,12 @@ serviceAccount:
 
 # Cluster scoped RBAC
 clusterRBAC:
-  # The controller needs read access to namespaces as well as read/delete access to pods.
+  # The controller needs full access to PrometheusPatchRules and everything else required to manage its resources.
   enabled: true
+
+  # By default the controller is granted full admin permsission on your cluster!
+  # If you want to avoid this you may disable this flag and create individual bindings.
+  fullAdmin: true
 
 # Prometheus operator PodMonitor
 podMonitor:
@@ -131,5 +135,8 @@ prometheusRule:
   #  namespace: monitoring
   labels: {}
   rules: []
+
+kubeRBACProxy:
+  enabled: true
 
 tolerations: []

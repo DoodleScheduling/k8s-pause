@@ -22,7 +22,6 @@ import (
 
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
@@ -88,7 +87,7 @@ func (r *NamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 
 	var res ctrl.Result
 
-	if suspend == true {
+	if suspend {
 		logger.Info("make sure namespace is suspended")
 		res, err = r.suspend(ctx, ns, logger)
 	} else {
@@ -123,7 +122,7 @@ func (r *NamespaceReconciler) resume(ctx context.Context, ns corev1.Namespace, l
 				clone.Spec.NodeName = ""
 
 				// Reset status, not needed as its ignored but nice
-				clone.Status = v1.PodStatus{}
+				clone.Status = corev1.PodStatus{}
 
 				if scheduler, ok := clone.Annotations[previousSchedulerName]; ok {
 					clone.Spec.SchedulerName = scheduler
@@ -143,8 +142,8 @@ func (r *NamespaceReconciler) resume(ctx context.Context, ns corev1.Namespace, l
 	return ctrl.Result{}, nil
 }
 
-func (r *NamespaceReconciler) recreatePod(ctx context.Context, pod v1.Pod, clone *v1.Pod) error {
-	list := v1.PodList{}
+func (r *NamespaceReconciler) recreatePod(ctx context.Context, pod corev1.Pod, clone *corev1.Pod) error {
+	list := corev1.PodList{}
 	watcher, err := r.Client.Watch(ctx, &list)
 	if err != nil {
 		return fmt.Errorf("failed to start watch stream for pod %s: %w", pod.Name, err)
@@ -160,7 +159,7 @@ func (r *NamespaceReconciler) recreatePod(ctx context.Context, pod v1.Pod, clone
 	// Wait for delete event before we can attempt create the clone
 	for event := range ch {
 		if event.Type == watch.Deleted {
-			if val, ok := event.Object.(*v1.Pod); ok && val.Name == pod.Name {
+			if val, ok := event.Object.(*corev1.Pod); ok && val.Name == pod.Name {
 				err = r.Client.Create(ctx, clone)
 				if err != nil {
 					return fmt.Errorf("failed to recreate pod %s: %w", pod.Name, err)
@@ -200,7 +199,7 @@ func (r *NamespaceReconciler) suspend(ctx context.Context, ns corev1.Namespace, 
 				clone.Spec.NodeName = ""
 
 				// Reset status, not needed as its ignored but nice
-				clone.Status = v1.PodStatus{}
+				clone.Status = corev1.PodStatus{}
 
 				// Assign our own scheduler to avoid the default scheduler interfer with the workload
 				clone.Spec.SchedulerName = schedulerName
