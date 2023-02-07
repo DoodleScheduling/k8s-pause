@@ -1,5 +1,5 @@
 apiVersion: v2
-appVersion: v0.2.1
+appVersion: 0.2.1
 description: Suspend and resume kubernetes namespaces
 home: https://github.com/DoodleScheduling/k8s-pause
 maintainers:
