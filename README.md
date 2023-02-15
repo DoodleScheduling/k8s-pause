@@ -1,10 +1,10 @@
 # k8s-pause
 
-[![release](https://img.shields.io/github/release/DoodleScheduling/k8sprom-patch-controller/all.svg)](https://github.com/DoodleScheduling/k8sprom-patch-controller/releases)
-[![release](https://github.com/doodlescheduling/k8sprom-patch-controller/actions/workflows/release.yaml/badge.svg)](https://github.com/doodlescheduling/k8sprom-patch-controller/actions/workflows/release.yaml)
-[![report](https://goreportcard.com/badge/github.com/DoodleScheduling/k8sprom-patch-controller)](https://goreportcard.com/report/github.com/DoodleScheduling/k8sprom-patch-controller)
-[![Coverage Status](https://coveralls.io/repos/github/DoodleScheduling/k8sprom-patch-controller/badge.svg?branch=master)](https://coveralls.io/github/DoodleScheduling/k8sprom-patch-controller?branch=master)
-[![license](https://img.shields.io/github/license/DoodleScheduling/k8sprom-patch-controller.svg)](https://github.com/DoodleScheduling/k8sprom-patch-controller/blob/master/LICENSE)
+[![release](https://img.shields.io/github/release/DoodleScheduling/k8s-pause/all.svg)](https://github.com/DoodleScheduling/k8s-pause/releases)
+[![release](https://github.com/doodlescheduling/k8s-pause/actions/workflows/release.yaml/badge.svg)](https://github.com/doodlescheduling/k8s-pause/actions/workflows/release.yaml)
+[![report](https://goreportcard.com/badge/github.com/DoodleScheduling/k8s-pause)](https://goreportcard.com/report/github.com/DoodleScheduling/k8s-pause)
+[![Coverage Status](https://coveralls.io/repos/github/DoodleScheduling/k8s-pause/badge.svg?branch=master)](https://coveralls.io/github/DoodleScheduling/k8s-pause?branch=master)
+[![license](https://img.shields.io/github/license/DoodleScheduling/k8s-pause.svg)](https://github.com/DoodleScheduling/k8s-pause/blob/master/LICENSE)
 
 
 Suspend and resume entire kubernetes namespaces! \
