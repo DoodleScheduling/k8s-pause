@@ -1,0 +1,5 @@
+/deployment/ @DoodleScheduling/DevOps
+Dockerfile @DoodleScheduling/DevOps
+CODEOWNERS @DoodleScheduling/DevOps
+.github/workflows @DoodleScheduling/DevOps
+renovate.json @DoodleScheduling/DevOps
