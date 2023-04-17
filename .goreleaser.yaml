@@ -32,8 +32,8 @@ sboms:
 
 dockers:
 - image_templates:
-  - ghcr.io/doodlescheduling/{{ .ProjectName }}:{{ .Version }}-amd64
-  dockerfile: Dockerfile.release
+  - ghcr.io/doodlescheduling/{{ .ProjectName }}:v{{ .Version }}-amd64
+  dockerfile: Dockerfile
   use: buildx
   ids:
   - manager
@@ -48,9 +48,9 @@ dockers:
   - --label=org.opencontainers.image.revision={{ .FullCommit }}
   - --label=org.opencontainers.image.licenses=Apache-2.0
 - image_templates:
-  - "ghcr.io/doodlescheduling/{{ .ProjectName }}:{{ .Version }}-arm64v8"
+  - ghcr.io/doodlescheduling/{{ .ProjectName }}:v{{ .Version }}-arm64v8
   goarch: arm64
-  dockerfile: Dockerfile.release
+  dockerfile: Dockerfile
   use: buildx
   ids:
   - manager
@@ -66,14 +66,14 @@ dockers:
   - --label=org.opencontainers.image.licenses=Apache-2.0
 
 docker_manifests:
-- name_template: ghcr.io/doodlescheduling/{{ .ProjectName }}:{{ .Version }}
+- name_template: ghcr.io/doodlescheduling/{{ .ProjectName }}:v{{ .Version }}
   image_templates:
-  - ghcr.io/doodlescheduling/{{ .ProjectName }}:{{ .Version }}-amd64
-  - ghcr.io/doodlescheduling/{{ .ProjectName }}:{{ .Version }}-arm64v8
+  - ghcr.io/doodlescheduling/{{ .ProjectName }}:v{{ .Version }}-amd64
+  - ghcr.io/doodlescheduling/{{ .ProjectName }}:v{{ .Version }}-arm64v8
 - name_template: ghcr.io/doodlescheduling/{{ .ProjectName }}:latest
   image_templates:
-  - ghcr.io/doodlescheduling/{{ .ProjectName }}:{{ .Version }}-amd64
-  - ghcr.io/doodlescheduling/{{ .ProjectName }}:{{ .Version }}-arm64v8
+  - ghcr.io/doodlescheduling/{{ .ProjectName }}:v{{ .Version }}-amd64
+  - ghcr.io/doodlescheduling/{{ .ProjectName }}:v{{ .Version }}-arm64v8
 
 signs:
 - cmd: cosign
