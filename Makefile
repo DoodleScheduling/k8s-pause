@@ -42,6 +42,7 @@ help: ## Display this help.
 .PHONY: manifests
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/base/crd/bases
+	cp config/base/crd/bases/* chart/k8s-pause/crds/
 
 .PHONY: generate
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
@@ -117,6 +118,14 @@ deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in
 .PHONY: undeploy
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
 	$(KUSTOMIZE) build config/default | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
+
+CLUSTER=kind
+
+.PHONY: kind-test
+kind-test: docker-build ## Deploy including test
+	kind load docker-image ${IMG} --name ${CLUSTER}
+	kubectl delete pods -n k8s-pause-system --all --force
+	$(KUSTOMIZE) build config/default | kubectl --context kind-${CLUSTER} apply -f -	
 
 CONTROLLER_GEN = $(GOBIN)/controller-gen
 .PHONY: controller-gen

@@ -1,0 +1,23 @@
+{{- if .Values.clusterRBAC.enabled -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ template "k8s-pause.fullname" . }}-view
+  labels:
+    app.kubernetes.io/name: {{ include "k8s-pause.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    helm.sh/chart: {{ include "k8s-pause.chart" . }}
+    rbac.authorization.k8s.io/aggregate-to-view: "true"
+  annotations:
+    {{- toYaml .Values.annotations | nindent 4 }}
+rules:
+- apiGroups:
+  - pause.infra.doodle.com
+  resources:
+  - resumeprofiles
+  verbs:
+  - get
+  - patch
+  - watch
+{{- end }}

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/doodlescheduling/k8s-pause/api/v1beta1"
 	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -12,9 +13,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
-// +kubebuilder:webhook:path=/mutate-v1-pod,mutating=true,failurePolicy=fail,groups="",resources=pods,verbs=create;update,versions=v1,name=k8s-pause.infra.doodle.com,admissionReviewVersions=v1,sideEffects=None
+// +kubebuilder:webhook:path=/mutate-v1-pod,mutating=true,failurePolicy=fail,groups="",resources=pods,verbs=create;update,versions=v1,name=pause.infra.doodle.com,admissionReviewVersions=v1,sideEffects=None
 
 const (
+	profileAnnotation   = "k8s-pause/profile"
 	suspendedAnnotation = "k8s-pause/suspend"
 	schedulerName       = "k8s-pause"
 )
@@ -46,6 +48,22 @@ func (a *Scheduler) Handle(ctx context.Context, req admission.Request) admission
 	var suspend bool
 	if suspended, ok := ns.Annotations[suspendedAnnotation]; ok {
 		if suspended == "true" {
+			suspend = true
+		}
+	}
+
+	if p, ok := ns.Annotations[profileAnnotation]; ok {
+		var profile v1beta1.ResumeProfile
+		err := a.Client.Get(ctx, client.ObjectKey{
+			Name:      p,
+			Namespace: pod.Namespace,
+		}, &profile)
+
+		if err != nil {
+			return admission.Errored(http.StatusBadRequest, err)
+		}
+
+		if !matchesResumeProfile(*pod, profile) {
 			suspend = true
 		}
 	}
