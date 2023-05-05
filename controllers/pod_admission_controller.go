@@ -3,7 +3,6 @@ package controllers
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/doodlescheduling/k8s-pause/api/v1beta1"
@@ -31,7 +30,6 @@ type Scheduler struct {
 // podAnnotator adds an annotation to every incoming pods.
 func (a *Scheduler) Handle(ctx context.Context, req admission.Request) admission.Response {
 	pod := &corev1.Pod{}
-	fmt.Printf("pod recomciler ===========================\n\n")
 
 	err := a.decoder.Decode(req, pod)
 	if err != nil {
@@ -54,21 +52,19 @@ func (a *Scheduler) Handle(ctx context.Context, req admission.Request) admission
 		}
 	}
 
-	fmt.Printf("pod recomciler %#v\n\n", ns)
-
 	if p, ok := ns.Annotations[profileAnnotation]; ok {
 		var profile v1beta1.ResumeProfile
 		err := a.Client.Get(ctx, client.ObjectKey{
 			Name:      p,
-			Namespace: req.Name,
+			Namespace: pod.Namespace,
 		}, &profile)
 
 		if err != nil {
 			return admission.Errored(http.StatusBadRequest, err)
 		}
 
-		if matchesResumeProfile(*pod, profile) {
-			return admission.Allowed(fmt.Sprintf("pod matches resume profile %s", profile.Name))
+		if !matchesResumeProfile(*pod, profile) {
+			suspend = true
 		}
 	}
 

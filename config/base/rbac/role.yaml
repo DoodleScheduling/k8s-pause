@@ -57,3 +57,11 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - "pause.infra.doodle.com"
+  resources:
+  - resumeprofiles
+  verbs:
+  - get
+  - watch
+  - list
