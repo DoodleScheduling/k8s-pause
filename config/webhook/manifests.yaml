@@ -13,7 +13,7 @@ webhooks:
       namespace: system
       path: /mutate-v1-pod
   failurePolicy: Fail
-  name: k8s-pause.infra.doodle.com
+  name: pause.infra.doodle.com
   rules:
   - apiGroups:
     - ""

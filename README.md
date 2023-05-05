@@ -24,6 +24,35 @@ Resume:
 kubectl annotate ns/my-namespace k8s-pause/suspend=false --overwrite
 ```
 
+## Resume profiles
+
+It is possible to define a set of pods which are allowed to start while a namespace is not paused.
+The active profile can be annotated on the namespace just like the suspend annotation. 
+If no profile is defined all pods in the namespace are suspended if `k8s-pause/suspend=true` is set.
+
+**Note**: The podSelector rules are or conditions. One ResumeProfile may match multiple pods by matchLabels or matchExpressions.
+```yaml
+apiVersion: pause.infra.doodle.com/v1beta1
+kind: ResumeProfile
+metadata:
+  name: garden-services
+spec:
+  podSelector:
+  - matchLabels:
+      app: garden
+      service: backend
+  - matchLabels:
+      app: garden
+      service: frontend
+  - matchLabels:
+      app: postgres
+```
+
+Set resume profile:
+```
+kubectl annotate ns/my-namespace k8s-pause/profile=garden-services --overwrite
+```
+
 ## Details
 
 The suspend flag on namespace level will affect only but any pods. It will not touch any resources besides pods.

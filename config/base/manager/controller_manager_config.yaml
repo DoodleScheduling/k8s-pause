@@ -8,4 +8,4 @@ webhook:
   port: 9443
 leaderElection:
   leaderElect: true
-  resourceName: k8s-pause.infra.doodle.com
+  resourceName: pause.infra.doodle.com

@@ -10,4 +10,5 @@ configMapGenerator:
   name: manager-config
 images:
 - name: ghcr.io/doodlescheduling/k8s-pause
-  newTag: v0.2.2
+  newName: k8s-pause
+  newTag: latest

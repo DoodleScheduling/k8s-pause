@@ -20,12 +20,16 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/doodlescheduling/k8s-pause/api/v1beta1"
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	ctrl "sigs.k8s.io/controller-runtime"
+
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -85,6 +89,18 @@ func (r *NamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		}
 	}
 
+	var profile v1beta1.ResumeProfile
+	if p, ok := ns.Annotations[profileAnnotation]; ok {
+		err := r.Client.Get(ctx, client.ObjectKey{
+			Name:      p,
+			Namespace: req.Name,
+		}, &profile)
+
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+	}
+
 	var res ctrl.Result
 
 	if suspend {
@@ -92,21 +108,41 @@ func (r *NamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		res, err = r.suspend(ctx, ns, logger)
 	} else {
 		logger.Info("make sure namespace is resumed")
-		res, err = r.resume(ctx, ns, logger)
+		res, err = r.resume(ctx, ns, &profile, logger)
 	}
 
 	return res, err
 }
 
-func (r *NamespaceReconciler) resume(ctx context.Context, ns corev1.Namespace, logger logr.Logger) (ctrl.Result, error) {
+func matchesResumeProfile(pod corev1.Pod, profile v1beta1.ResumeProfile) bool {
+	for _, match := range profile.Spec.PodSelector {
+		selector, err := metav1.LabelSelectorAsSelector(&match)
+		if err != nil {
+			continue
+		}
+
+		if selector.Matches(labels.Set(pod.Labels)) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (r *NamespaceReconciler) resume(ctx context.Context, ns corev1.Namespace, profile *v1beta1.ResumeProfile, logger logr.Logger) (ctrl.Result, error) {
 	var list corev1.PodList
 	if err := r.Client.List(ctx, &list, client.InNamespace(ns.Name)); err != nil {
 		return ctrl.Result{}, err
 	}
 
 	for _, pod := range list.Items {
-		if pod.Status.Phase == phaseSuspended && pod.Spec.SchedulerName == schedulerName {
+		if profile != nil {
+			if !matchesResumeProfile(pod, *profile) {
+				continue
+			}
+		}
 
+		if pod.Status.Phase == phaseSuspended && pod.Spec.SchedulerName == schedulerName {
 			if len(pod.ObjectMeta.OwnerReferences) > 0 {
 				err := r.Client.Delete(ctx, &pod)
 				if err != nil {

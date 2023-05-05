@@ -3,8 +3,10 @@ package controllers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
+	"github.com/doodlescheduling/k8s-pause/api/v1beta1"
 	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -12,9 +14,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
-// +kubebuilder:webhook:path=/mutate-v1-pod,mutating=true,failurePolicy=fail,groups="",resources=pods,verbs=create;update,versions=v1,name=k8s-pause.infra.doodle.com,admissionReviewVersions=v1,sideEffects=None
+// +kubebuilder:webhook:path=/mutate-v1-pod,mutating=true,failurePolicy=fail,groups="",resources=pods,verbs=create;update,versions=v1,name=pause.infra.doodle.com,admissionReviewVersions=v1,sideEffects=None
 
 const (
+	profileAnnotation   = "k8s-pause/profile"
 	suspendedAnnotation = "k8s-pause/suspend"
 	schedulerName       = "k8s-pause"
 )
@@ -28,6 +31,7 @@ type Scheduler struct {
 // podAnnotator adds an annotation to every incoming pods.
 func (a *Scheduler) Handle(ctx context.Context, req admission.Request) admission.Response {
 	pod := &corev1.Pod{}
+	fmt.Printf("pod recomciler ===========================\n\n")
 
 	err := a.decoder.Decode(req, pod)
 	if err != nil {
@@ -47,6 +51,24 @@ func (a *Scheduler) Handle(ctx context.Context, req admission.Request) admission
 	if suspended, ok := ns.Annotations[suspendedAnnotation]; ok {
 		if suspended == "true" {
 			suspend = true
+		}
+	}
+
+	fmt.Printf("pod recomciler %#v\n\n", ns)
+
+	if p, ok := ns.Annotations[profileAnnotation]; ok {
+		var profile v1beta1.ResumeProfile
+		err := a.Client.Get(ctx, client.ObjectKey{
+			Name:      p,
+			Namespace: req.Name,
+		}, &profile)
+
+		if err != nil {
+			return admission.Errored(http.StatusBadRequest, err)
+		}
+
+		if matchesResumeProfile(*pod, profile) {
+			return admission.Allowed(fmt.Sprintf("pod matches resume profile %s", profile.Name))
 		}
 	}
 

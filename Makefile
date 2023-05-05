@@ -118,6 +118,14 @@ deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
 	$(KUSTOMIZE) build config/default | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
 
+CLUSTER=kind
+
+.PHONY: kind-test
+kind-test: docker-build ## Deploy including test
+	kubectl delete pods -n k8s-pause-system --all
+	kind load docker-image ${IMG} --name ${CLUSTER}
+	$(KUSTOMIZE) build config/default | kubectl --context kind-${CLUSTER} apply -f -	
+
 CONTROLLER_GEN = $(GOBIN)/controller-gen
 .PHONY: controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
