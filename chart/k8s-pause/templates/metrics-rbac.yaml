@@ -17,6 +17,24 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
+  name: {{ include "k8s-pause.fullname" . }}-metrics
+  labels:
+    app.kubernetes.io/name: {{ include "k8s-pause.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    helm.sh/chart: {{ include "k8s-pause.chart" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "k8s-pause.fullname" . }}-metrics-reader
+subjects:
+- kind: ServiceAccount
+  name: {{ template "k8s-pause.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
   name: {{ include "k8s-pause.fullname" . }}-proxy
   labels:
     app.kubernetes.io/name: {{ include "k8s-pause.name" . }}

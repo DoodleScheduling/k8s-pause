@@ -91,7 +91,7 @@ spec:
         - --upstream=http://127.0.0.1:{{ .Values.metricsPort }}
         - --logtostderr=true
         - --v=0
-        image: quay.io/brancz/kube-rbac-proxy:v0.14.0
+        image: {{ .Values.kubeRBACProxy.image }}
         imagePullPolicy: IfNotPresent
         name: kube-rbac-proxy
         ports:

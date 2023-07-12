@@ -140,7 +140,7 @@ prometheusRule:
 
 kubeRBACProxy:
   enabled: true
-
+  image: quay.io/brancz/kube-rbac-proxy:v0.14.2
   securityContext:
     allowPrivilegeEscalation: false
     capabilities:
@@ -148,5 +148,11 @@ kubeRBACProxy:
     readOnlyRootFilesystem: true
 
   resources: {}
+  # limits:
+  #   cpu: 500m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 5m
+  #   memory: 64Mi
 
 tolerations: []
