@@ -14,4 +14,4 @@ keywords:
 name: k8s-pause
 sources:
 - https://github.com/DoodleScheduling/k8s-pause
-version: 0.2.7
+version: 0.2.8

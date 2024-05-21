@@ -91,6 +91,12 @@ envFromSecret: ""
 ##     key: password
 extraEnvSecrets: {}
 
+# Ability to set a PodDisruptionBudget
+pdb:
+  enabled: false
+  minAvailable: 1
+  maxUnavailable: ""
+
 securityContext:
   allowPrivilegeEscalation: false
   capabilities:
