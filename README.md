@@ -24,6 +24,15 @@ Resume:
 kubectl annotate ns/my-namespace k8s-pause/suspend=false --overwrite
 ```
 
+## `k8s-pause/ignore` annotation
+
+You can define an annotation on a pod to ensure it is ignored by the controller
+and so never suspended. Use the following annotation:
+
+```
+k8s-pause/ignore: "true"
+```
+
 ## Resume profiles
 
 It is possible to define a set of pods which are allowed to start while a namespace is not paused.
