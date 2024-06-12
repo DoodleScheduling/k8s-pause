@@ -18,7 +18,7 @@ jobs:
         with:
           go-version: 1.20.x
       - name: Restore Go cache
-        uses: actions/cache@4723a57e26efda3a62cbde1812113b730952852d #v3.2.2
+        uses: actions/cache@e12d46a63a90f2fae62d114769bbf2a179198b5c # v3.3.3
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
