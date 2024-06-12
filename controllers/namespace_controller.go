@@ -41,6 +41,7 @@ import (
 
 const (
 	previousSchedulerName = "k8s-pause/previousScheduler"
+	ignoreAnnotation      = "k8s-pause/ignore"
 )
 
 // NamespaceReconciler reconciles a Namespace object
@@ -145,6 +146,10 @@ func (r *NamespaceReconciler) resume(ctx context.Context, ns corev1.Namespace, p
 	}
 
 	for _, pod := range list.Items {
+		if ignore, ok := pod.Annotations[ignoreAnnotation]; ok && ignore == "true" {
+			continue
+		}
+
 		if profile != nil {
 			if !matchesResumeProfile(pod, *profile) {
 				continue
@@ -226,6 +231,10 @@ func (r *NamespaceReconciler) suspend(ctx context.Context, ns corev1.Namespace, 
 	}
 
 	for _, pod := range list.Items {
+		if ignore, ok := pod.Annotations[ignoreAnnotation]; ok && ignore == "true" {
+			continue
+		}
+
 		if err := r.suspendPod(ctx, pod, logger); err != nil {
 			logger.Error(err, "failed to suspend pod", "pod", pod.Name)
 			continue
