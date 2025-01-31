@@ -73,8 +73,12 @@ var _ = BeforeSuite(func() {
 	//+kubebuilder:scaffold:scheme
 	// Pod setup
 	fmt.Printf("setup..................................")
+	cl, err := client.NewWithWatch(k8sManager.GetConfig(), client.Options{
+		Scheme: k8sManager.GetScheme(),
+		Mapper: k8sManager.GetRESTMapper(),
+	})
 	err = (&PodReconciler{
-		Client: k8sManager.GetClient(),
+		Client: cl,
 		Log:    ctrl.Log.WithName("controllers").WithName("Pod"),
 		Scheme: k8sManager.GetScheme(),
 	}).SetupWithManager(k8sManager, PodReconcilerOptions{MaxConcurrentReconciles: 10})

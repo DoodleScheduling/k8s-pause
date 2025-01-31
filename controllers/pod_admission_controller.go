@@ -16,9 +16,9 @@ import (
 // +kubebuilder:webhook:path=/mutate-v1-pod,mutating=true,failurePolicy=fail,groups="",resources=pods,verbs=create;update,versions=v1,name=pause.infra.doodle.com,admissionReviewVersions=v1,sideEffects=None
 
 const (
-	profileAnnotation   = "k8s-pause/profile"
-	suspendedAnnotation = "k8s-pause/suspend"
-	schedulerName       = "k8s-pause"
+	ProfileAnnotation   = "k8s-pause/profile"
+	SuspendedAnnotation = "k8s-pause/suspend"
+	SchedulerName       = "k8s-pause"
 )
 
 // podAnnotator annotates Pods
@@ -46,13 +46,13 @@ func (a *Scheduler) Handle(ctx context.Context, req admission.Request) admission
 	}
 
 	var suspend bool
-	if suspended, ok := ns.Annotations[suspendedAnnotation]; ok {
+	if suspended, ok := ns.Annotations[SuspendedAnnotation]; ok {
 		if suspended == "true" {
 			suspend = true
 		}
 	}
 
-	if p, ok := ns.Annotations[profileAnnotation]; ok {
+	if p, ok := ns.Annotations[ProfileAnnotation]; ok {
 		var profile v1beta1.ResumeProfile
 		err := a.Client.Get(ctx, client.ObjectKey{
 			Name:      p,
@@ -76,7 +76,7 @@ func (a *Scheduler) Handle(ctx context.Context, req admission.Request) admission
 		}
 	}
 
-	pod.Spec.SchedulerName = schedulerName
+	pod.Spec.SchedulerName = SchedulerName
 
 	marshaledPod, err := json.Marshal(pod)
 	if err != nil {
