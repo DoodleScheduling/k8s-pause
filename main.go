@@ -119,6 +119,10 @@ func main() {
 		Scheme: mgr.GetScheme(),
 		Mapper: mgr.GetRESTMapper(),
 	})
+	if err != nil {
+		setupLog.Error(err, "failed to setup client")
+		os.Exit(1)
+	}
 
 	if err = (&controllers.PodReconciler{
 		Client: client,
@@ -126,11 +130,6 @@ func main() {
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr, controllers.PodReconcilerOptions{MaxConcurrentReconciles: viper.GetInt("concurrent")}); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Pod")
-		os.Exit(1)
-	}
-
-	if err != nil {
-		setupLog.Error(err, "failed to setup client")
 		os.Exit(1)
 	}
 

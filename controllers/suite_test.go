@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -77,6 +78,11 @@ var _ = BeforeSuite(func() {
 		Scheme: k8sManager.GetScheme(),
 		Mapper: k8sManager.GetRESTMapper(),
 	})
+	if err != nil {
+		logf.Log.Error(err, "failed to setup client")
+		os.Exit(1)
+	}
+
 	err = (&PodReconciler{
 		Client: cl,
 		Log:    ctrl.Log.WithName("controllers").WithName("Pod"),
