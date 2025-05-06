@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 
+	"github.com/doodlescheduling/k8s-pause/pkg/common"
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -39,7 +40,7 @@ const (
 
 // PodReconciler reconciles a Pod object
 type PodReconciler struct {
-	client.Client
+	Client client.WithWatch
 	Log    logr.Logger
 	Scheme *runtime.Scheme
 }
@@ -59,6 +60,8 @@ func (r *PodReconciler) SetupWithManager(mgr ctrl.Manager, opts PodReconcilerOpt
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.11.0/pkg/reconcile
 func (r *PodReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	logger := r.Log.WithValues("Namespace", req.Namespace, "Name", req.NamespacedName)
+
 	// Fetch the pod
 	pod := corev1.Pod{}
 
@@ -74,7 +77,64 @@ func (r *PodReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 		return reconcile.Result{}, err
 	}
 
-	if pod.Spec.SchedulerName == schedulerName {
+	var suspend bool
+	if suspended, ok := pod.Annotations[SuspendedAnnotation]; ok {
+		if suspended == "true" {
+			suspend = true
+		}
+	}
+
+	if suspend {
+		logger.Info("make sure pod is suspended")
+		if ignore, ok := pod.Annotations[common.IgnoreAnnotation]; ok && ignore == "true" {
+			return ctrl.Result{}, nil
+		} else {
+			if err := common.SuspendPod(ctx, r.Client, pod, logger); err != nil {
+				logger.Error(err, "failed to suspend pod", "pod", pod.Name)
+			}
+		}
+
+	} else {
+		logger.Info("make sure pod is resumed")
+		if ignore, ok := pod.Annotations[common.IgnoreAnnotation]; ok && ignore == "true" {
+			return ctrl.Result{}, nil
+		} else {
+			if pod.Status.Phase == phaseSuspended && pod.Spec.SchedulerName == SchedulerName {
+				if len(pod.ObjectMeta.OwnerReferences) > 0 {
+					err := r.Client.Delete(ctx, &pod)
+					if err != nil {
+						logger.Error(err, "failed to delete pod while resuming", "pod", pod.Name)
+					}
+				} else {
+					clone := pod.DeepCopy()
+
+					// We won't be able to create the object with the same resource version
+					clone.ObjectMeta.ResourceVersion = ""
+
+					// Remove assigned node to avoid scheduling
+					clone.Spec.NodeName = ""
+
+					// Reset status, not needed as its ignored but nice
+					clone.Status = corev1.PodStatus{}
+
+					if scheduler, ok := clone.Annotations[common.PreviousSchedulerName]; ok {
+						clone.Spec.SchedulerName = scheduler
+						delete(clone.Annotations, common.PreviousSchedulerName)
+					} else {
+						clone.Spec.SchedulerName = ""
+					}
+
+					err := common.RecreatePod(ctx, r.Client, pod, clone)
+					if err != nil {
+						logger.Error(err, "recrete unowned pod failed", "pod", pod.Name)
+					}
+				}
+			}
+		}
+
+	}
+
+	if pod.Spec.SchedulerName == SchedulerName {
 		pod.Status.Phase = phaseSuspended
 
 		// Update status after reconciliation.
