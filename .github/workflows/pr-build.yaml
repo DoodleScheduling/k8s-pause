@@ -1,12 +1,10 @@
 name: pr-build
-
 on:
   pull_request:
     types:
       - opened
       - synchronize
       - reopened
-
 jobs:
   e2e:
     runs-on: ubuntu-latest
@@ -80,3 +78,5 @@ jobs:
           kubectl -n k8s-pause-system describe pods
           kubectl -n k8s-pause-system get all
           kubectl -n k8s-pause-system logs deploy/k8s-pause-controller-manager manager
+  validate-chart:
+    steps: []
