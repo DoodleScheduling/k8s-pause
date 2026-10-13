@@ -1,6 +1,6 @@
 module github.com/doodlescheduling/k8s-pause
 
-go 1.20
+go 1.25.0
 
 require (
 	github.com/go-logr/logr v1.2.3
@@ -62,7 +62,7 @@ require (
 	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/oauth2 v0.4.0 // indirect
-	golang.org/x/sys v0.6.0 // indirect
+	golang.org/x/sys v0.44.0 // indirect
 	golang.org/x/term v0.6.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
